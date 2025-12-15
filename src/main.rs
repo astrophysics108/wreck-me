@@ -6,8 +6,8 @@ const HEIGHT:f32 = 500.0;
 fn conf() -> Conf {
     Conf {
         window_title: "Wreck me.".to_owned(),
-        window_width: WIDTH as i32,
-        window_height: HEIGHT as i32,
+        window_width: (WIDTH*1.5) as i32,
+        window_height: (HEIGHT*1.5) as i32,
         high_dpi: true,
         fullscreen: false,
         window_resizable: false,
