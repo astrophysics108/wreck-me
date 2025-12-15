@@ -71,6 +71,16 @@ fn is_hovering(x:f32, y: f32, w: f32, h: f32) -> bool {
    }
 }
 
+fn did_hit(
+    x: f32, y: f32, w: f32, h: f32,
+    mx: f32, my: f32, mw: f32, mh: f32
+) -> bool {
+    x < mx + mw &&
+    x + w > mx &&
+    y < my + mh &&
+    y + h > my
+}
+
 async fn welcome_screen() {
     let path1 = r"images\wreck_me_one.png";
     let bg_texture1 = load_texture(&path1).await.unwrap();
@@ -315,14 +325,14 @@ async fn pick_projectile() -> String {
      }
 }
 
-async fn tutorial_launch(projectile_path: String) {
+async fn tutorial_launch(projectile_path: String) -> bool {
     let path1 = r"images\tutorial_ground_one.png";
     let bg_texture1 = load_texture(&path1).await.unwrap();
     let path2 = r"images\tutorial_ground_two.png";
     let bg_texture2 = load_texture(&path2).await.unwrap();
 
     let obstacle_path = r"images\obstacles\bricks_ok.png";
-    let obstacle_path_texture = load_texture(&obstacle_path).await.unwrap();
+    let obstacle = load_texture(&obstacle_path).await.unwrap();
 
     let projectile =  load_texture(&projectile_path).await.unwrap();
     let mut projectile_x = 100.0;
@@ -344,6 +354,15 @@ async fn tutorial_launch(projectile_path: String) {
             WHITE,
             DrawTextureParams {
                 dest_size: Some(vec2(60.0, 60.0)),
+                ..Default::default()
+            },
+        );
+        draw_texture_ex(
+            &obstacle, 
+            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
                 ..Default::default()
             },
         );
@@ -381,6 +400,15 @@ async fn tutorial_launch(projectile_path: String) {
                 ..Default::default()
             },
         );
+        draw_texture_ex(
+            &obstacle, 
+            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
+                ..Default::default()
+            },
+        );
 
         if is_hovering(WIDTH - 150.0, -10.0, 150.0, 150.0) && is_mouse_button_down(MouseButton::Left){
             next_frame().await;
@@ -396,7 +424,7 @@ async fn tutorial_launch(projectile_path: String) {
     let bg_texture2 = load_texture(&path2).await.unwrap();
     theta = theta * 0.9;
     u = u * 2.0;
-    let velocityx = theta.to_radians().cos() * u;
+    let mut velocityx = theta.to_radians().cos() * u;
     let mut velocityy = -theta.to_radians().sin() * u;
     loop {
         clear_background(LIGHTGRAY);
@@ -410,29 +438,206 @@ async fn tutorial_launch(projectile_path: String) {
                 ..Default::default()
             },
         );
+        draw_texture_ex(
+            &obstacle, 
+            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
+                ..Default::default()
+            },
+        );
         projectile_x += velocityx*0.05;
         projectile_y += velocityy*0.05;
         velocityy += 9.81 * 0.05;
 
-        if projectile_y > HEIGHT - 120.0 {
-            next_frame().await;
-            break;  
+        if did_hit(600.0, HEIGHT-120.0, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
+            return true;
         }
+
+        if projectile_y > HEIGHT - 120.0 {
+            velocityx = 0.0;
+            velocityy = 0.0;
+            if did_hit(600.0, HEIGHT-120.0, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+            break false;  
+        };
         next_frame().await;
     }
 
     
 }
 
-async fn tutorial() {
-        //tutorial_loading().await;
-        //text_slides_tutorial().await;
-        let projectile_path = pick_projectile().await;
-        tutorial_launch(projectile_path).await;
+async fn level(projectile_path: String) -> bool {
+    let path1 = r"images\tutorial_ground_one.png";
+    let bg_texture1 = load_texture(&path1).await.unwrap();
+    let path2 = r"images\tutorial_ground_two.png";
+    let bg_texture2 = load_texture(&path2).await.unwrap();
+
+    let obstacle_path = r"images\obstacles\bricks_ok.png";
+    let obstacle = load_texture(&obstacle_path).await.unwrap();
+
+    let projectile =  load_texture(&projectile_path).await.unwrap();
+    let mut projectile_x = 100.0;
+    let mut projectile_y = HEIGHT - 120.0;
+    let mut theta:f32 = 45.0;
+    let mut u:f32 = 10.0;
+
+    let launch_path = r"images\launch.png";
+    let launch = load_texture(&launch_path).await.unwrap();
+
+    loop {
+        clear_background(LIGHTGRAY);
+        draw_bg(&bg_texture1, &bg_texture2);
+        theta = draw_slider(theta, vec2(20.0, 50.0), Color::new(0.0, 0.0, 0.0, 1.0), "angle");
+        u = draw_slider(u, vec2(20.0, 120.0), Color::new(0.0, 0.0, 0.0, 1.0), "initial velocity");
+        draw_texture_ex(
+            &projectile, 
+            projectile_x - 30.0, projectile_y - 30.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(60.0, 60.0)),
+                ..Default::default()
+            },
+        );
+        draw_texture_ex(
+            &launch, 
+            WIDTH - 150.0, -10.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(150.0, 150.0)),
+                ..Default::default()
+            },
+        );
+        draw_texture_ex(
+            &obstacle, 
+            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
+                ..Default::default()
+            },
+        );
+
+        if is_hovering(WIDTH - 150.0, -10.0, 150.0, 150.0) && is_mouse_button_down(MouseButton::Left){
+            next_frame().await;
+            break;
+        }
+
+        next_frame().await;
+    }
+
+    theta = theta * 0.9;
+    u = u * 2.0;
+    let mut velocityx = theta.to_radians().cos() * u;
+    let mut velocityy = -theta.to_radians().sin() * u;
+    loop {
+        clear_background(LIGHTGRAY);
+        draw_bg(&bg_texture1, &bg_texture2);
+        draw_texture_ex(
+            &projectile, 
+            projectile_x - 30.0, projectile_y - 30.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(60.0, 60.0)),
+                ..Default::default()
+            },
+        );
+        draw_texture_ex(
+            &obstacle, 
+            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
+                ..Default::default()
+            },
+        );
+        projectile_x += velocityx*0.05;
+        projectile_y += velocityy*0.05;
+        velocityy += 9.81 * 0.05;
+
+        if did_hit(600.0, HEIGHT-120.0, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
+            return true;
+        }
+
+        if projectile_y > HEIGHT - 120.0 {
+            velocityx = 0.0;
+            velocityy = 0.0;
+            if did_hit(600.0, HEIGHT-120.0, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+            break false;  
+        };
+        next_frame().await;
+    }
+
+    
 }
+
+async fn tutorial_win() {
+    let obstacle_path1 = r"images\obstacles\bricks_kabam_one.png";
+    let obstacle1 = load_texture(&obstacle_path1).await.unwrap();
+    let obstacle_path2 = r"images\obstacles\bricks_kabam_two.png";
+    let obstacle2 = load_texture(&obstacle_path2).await.unwrap();
+
+    let path1 = r"images\tutorial_launched1.png";
+    let bg_texture1 = load_texture(&path1).await.unwrap();
+    let path2 = r"images\tutorial_launched2.png";
+    let bg_texture2 = load_texture(&path2).await.unwrap();
+
+    loop {
+        clear_background(LIGHTGRAY);
+        draw_bg(&bg_texture1, &bg_texture2);
+        let t = get_time();
+        let obstacle = if ((t / 0.8).floor() as i32) % 2 == 0 {
+                &obstacle1
+            } else {
+                &obstacle2
+        };
+        draw_texture_ex(
+            &obstacle, 
+            600.0 - 70.0, HEIGHT - 120.0- 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
+                ..Default::default()
+            },
+        );
+        
+        if is_mouse_button_down(MouseButton::Left){
+            next_frame().await;
+            break;
+        }
+        next_frame().await;
+    }
+
+}
+
+async fn tutorial() -> String {
+        tutorial_loading().await;
+        text_slides_tutorial().await;
+        let projectile_path = pick_projectile().await;
+        let mut win = tutorial_launch(projectile_path.clone()).await;
+        while win == false {
+            win = tutorial_launch(projectile_path.clone()).await;
+        }
+        tutorial_win().await;
+        return projectile_path;
+}
+
+
 
 #[macroquad::main(conf())]
 async fn main() {
     welcome_screen().await;
-    tutorial().await;
+    let projectile_path = tutorial().await;
+    level(projectile_path.clone()).await;
+
 }
