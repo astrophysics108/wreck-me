@@ -37,7 +37,7 @@ fn draw_bg(bg_texture1: &Texture2D, bg_texture2: &Texture2D) {
 
 fn is_hovering(x:f32, y: f32, w: f32, h: f32) -> bool {
     let (mx, my) = mouse_position();
-    if (x - (w/2.0)) <= mx && (x + (w/2.0)) >= mx && (y - (h/2.0)) <= my && (y + (h/2.0)) >= my {
+    if x <= mx && (x + w) >= mx && y <= my && (y + h) >= my {
         return true 
    }
    else {
@@ -136,7 +136,7 @@ async fn text_slides_tutorial() {
     }
 }
 
-async fn pick_projectile() {
+async fn pick_projectile() -> String {
     let path1 = r"images\choose_screen.png";
     let bg_texture1 = load_texture(&path1).await.unwrap();
     let path2 = r"images\choose_screen_two.png";
@@ -153,42 +153,146 @@ async fn pick_projectile() {
         clear_background(LIGHTGRAY);
         draw_bg(&bg_texture1, &bg_texture2);
         
-        draw_texture_ex(
-            &orange, 
-            200.0, 0.0,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(100.0, 100.0)),
-                ..Default::default()
-            },
-        );
-        draw_texture_ex(
-            &cat, 
-            350.0, 0.0,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(100.0, 100.0)),
-                ..Default::default()
-            },
-        );
-        draw_texture_ex(
-            &proton, 
-            500.0, 0.0,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(100.0, 100.0)),
-                ..Default::default()
-            },
-        );
+        
+
+        if is_hovering(150.0, HEIGHT - 50.0, 100.0, 100.0) {
+            if is_mouse_button_pressed(MouseButton::Left){
+                return orange_path.to_string()
+            }
+            draw_texture_ex(
+                &orange, 
+                200.0 - 100.0, HEIGHT - 200.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(200.0, 200.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &cat, 
+                350.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &proton,
+                500.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+
+        }
+        else if is_hovering(300.0, HEIGHT - 50.0, 100.0, 100.0) {
+            if is_mouse_button_pressed(MouseButton::Left){
+                return cat_path.to_string()
+            }
+            draw_texture_ex(
+                &orange, 
+                200.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &cat, 
+                350.0 - 100.0, HEIGHT - 200.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(200.0, 200.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &proton,
+                500.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+
+        }
+        else if is_hovering(450.0, HEIGHT - 50.0, 100.0, 100.0) {
+            if is_mouse_button_pressed(MouseButton::Left){
+                return proton_path.to_string()
+            }
+            draw_texture_ex(
+                &orange, 
+                200.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &cat, 
+                350.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &proton,
+                500.0 - 100.0, HEIGHT - 200.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(200.0, 200.0)),
+                    ..Default::default()
+                },
+            );
+
+        }
+        else {
+            draw_texture_ex(
+                &orange, 
+                200.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &cat, 
+                350.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+            draw_texture_ex(
+                &proton,
+                500.0 - 50.0, HEIGHT - 50.0,
+                WHITE,
+                DrawTextureParams {
+                    dest_size: Some(vec2(100.0, 100.0)),
+                    ..Default::default()
+                },
+            );
+
+        }
 
         next_frame().await;
      }
 }
 
 async fn tutorial() {
-        //tutorial_loading().await;
+        tutorial_loading().await;
         text_slides_tutorial().await;
-        pick_projectile().await;
+        let projectile_path = pick_projectile().await;
 }
 
 #[macroquad::main(conf())]
