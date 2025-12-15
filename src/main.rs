@@ -694,6 +694,6 @@ async fn main() {
     while win == false {
         win = level(projectile_path.clone(), r"images\levelonebg.png".to_string(), r"images\levelonebg.png".to_string(), r"images\starok.png".to_string(), vec2(300.0, HEIGHT-200.0)).await;
     }
-    level_win(r"images\levelonewin1.png".to_string(), r"images\levelonewin2.png".to_string(), r"images\starbrokenone.png".to_string(), r"images\starbrokentwo.png".to_string(), vec2(300.0, HEIGHT-300.0)).await;
+    level_win(r"images\levelonewin1.png".to_string(), r"images\levelonewin2.png".to_string(), r"images\starbrokenone.png".to_string(), r"images\starbrokentwo.png".to_string(), vec2(300.0, HEIGHT-200.0)).await;
 
 }
