@@ -139,6 +139,23 @@ async fn tutorial_loading(){
     }
 }
 
+async fn level_loading(path1: String, path2: String){
+    let bg_texture1 = load_texture(&path1).await.unwrap();
+    let bg_texture2 = load_texture(&path2).await.unwrap();
+    let t_start = get_time();
+
+    loop {
+        clear_background(LIGHTGRAY);
+        let t = get_time();
+        if t - t_start >= 4.0 {
+            return
+        };
+
+        draw_bg(&bg_texture1, &bg_texture2);
+        next_frame().await;
+    }
+}
+
 async fn text_slides_tutorial() {
     let bg_paths = vec![
         vec![r"images\tutorial_slides\1_1.png",
@@ -472,14 +489,13 @@ async fn tutorial_launch(projectile_path: String) -> bool {
     
 }
 
-async fn level(projectile_path: String) -> bool {
-    let path1 = r"images\tutorial_ground_one.png";
+async fn level(projectile_path: String, path1: String, path2: String, obstacle_path: String, obstacle_position: Vec2) -> bool {
     let bg_texture1 = load_texture(&path1).await.unwrap();
-    let path2 = r"images\tutorial_ground_two.png";
     let bg_texture2 = load_texture(&path2).await.unwrap();
 
-    let obstacle_path = r"images\obstacles\bricks_ok.png";
     let obstacle = load_texture(&obstacle_path).await.unwrap();
+    let obstaclex = obstacle_position[0];
+    let obstacley = obstacle_position[1];
 
     let projectile =  load_texture(&projectile_path).await.unwrap();
     let mut projectile_x = 100.0;
@@ -515,7 +531,7 @@ async fn level(projectile_path: String) -> bool {
         );
         draw_texture_ex(
             &obstacle, 
-            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            obstaclex - 70.0, obstacley - 130.0,
             WHITE,
             DrawTextureParams {
                 dest_size: Some(vec2(140.0, 140.0)),
@@ -549,7 +565,7 @@ async fn level(projectile_path: String) -> bool {
         );
         draw_texture_ex(
             &obstacle, 
-            600.0 - 70.0, HEIGHT-120.0 - 130.0,
+            obstaclex - 70.0, obstacley - 130.0,
             WHITE,
             DrawTextureParams {
                 dest_size: Some(vec2(140.0, 140.0)),
@@ -560,14 +576,14 @@ async fn level(projectile_path: String) -> bool {
         projectile_y += velocityy*0.05;
         velocityy += 9.81 * 0.05;
 
-        if did_hit(600.0, HEIGHT-120.0, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
+        if did_hit(obstaclex, obstacley, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
             return true;
         }
 
         if projectile_y > HEIGHT - 120.0 {
             velocityx = 0.0;
             velocityy = 0.0;
-            if did_hit(600.0, HEIGHT-120.0, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
+            if did_hit(obstaclex, obstacley, 140.0, 140.0, projectile_x, projectile_y, 60.0, 60.0) {
                 return true;
             }
             else {
@@ -587,9 +603,9 @@ async fn tutorial_win() {
     let obstacle_path2 = r"images\obstacles\bricks_kabam_two.png";
     let obstacle2 = load_texture(&obstacle_path2).await.unwrap();
 
-    let path1 = r"images\tutorial_launched1.png";
+    let path1 = r"images\tutorialwin1.png";
     let bg_texture1 = load_texture(&path1).await.unwrap();
-    let path2 = r"images\tutorial_launched2.png";
+    let path2 = r"images\tutorialwin2.png";
     let bg_texture2 = load_texture(&path2).await.unwrap();
 
     loop {
@@ -604,6 +620,41 @@ async fn tutorial_win() {
         draw_texture_ex(
             &obstacle, 
             600.0 - 70.0, HEIGHT - 120.0- 130.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(140.0, 140.0)),
+                ..Default::default()
+            },
+        );
+        
+        if is_mouse_button_down(MouseButton::Left){
+            next_frame().await;
+            break;
+        }
+        next_frame().await;
+    }
+
+}
+
+async fn level_win(path1: String, path2: String, obstacle_path1: String, obstacle_path2: String, obstacle_position: Vec2) {
+    let obstacle1 = load_texture(&obstacle_path1).await.unwrap();
+    let obstacle2 = load_texture(&obstacle_path2).await.unwrap();
+
+    let bg_texture1 = load_texture(&path1).await.unwrap();
+    let bg_texture2 = load_texture(&path2).await.unwrap();
+
+    loop {
+        clear_background(LIGHTGRAY);
+        draw_bg(&bg_texture1, &bg_texture2);
+        let t = get_time();
+        let obstacle = if ((t / 0.8).floor() as i32) % 2 == 0 {
+                &obstacle1
+            } else {
+                &obstacle2
+        };
+        draw_texture_ex(
+            &obstacle, 
+            obstacle_position[0] - 70.0, obstacle_position[1] - 130.0,
             WHITE,
             DrawTextureParams {
                 dest_size: Some(vec2(140.0, 140.0)),
@@ -638,6 +689,11 @@ async fn tutorial() -> String {
 async fn main() {
     welcome_screen().await;
     let projectile_path = tutorial().await;
-    level(projectile_path.clone()).await;
+    level_loading(r"images\levelone1.png".to_string(), r"images\levelone2.png".to_string()).await;
+    let mut win = level(projectile_path.clone(), r"images\levelonebg.png".to_string(), r"images\levelonebg.png".to_string(), r"images\starok.png".to_string(), vec2(300.0, HEIGHT-200.0)).await;
+    while win == false {
+        win = level(projectile_path.clone(), r"images\levelonebg.png".to_string(), r"images\levelonebg.png".to_string(), r"images\starok.png".to_string(), vec2(300.0, HEIGHT-200.0)).await;
+    }
+    level_win(r"images\levelonewin1.png".to_string(), r"images\levelonewin2.png".to_string(), r"images\starbrokenone.png".to_string(), r"images\starbrokentwo.png".to_string(), vec2(300.0, HEIGHT-300.0)).await;
 
 }
