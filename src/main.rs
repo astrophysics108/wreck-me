@@ -142,9 +142,44 @@ async fn pick_projectile() {
     let path2 = r"images\choose_screen_two.png";
     let bg_texture2 = load_texture(&path2).await.unwrap();
 
+    let orange_path = r"images\projectiles\orange_intro.png";
+    let orange =  load_texture(&orange_path).await.unwrap();
+    let cat_path = r"images\projectiles\cat_intro.png";
+    let cat =  load_texture(&cat_path).await.unwrap();
+    let proton_path = r"images\projectiles\proton_intro.png";
+    let proton =  load_texture(&proton_path).await.unwrap();
+
     loop {
         clear_background(LIGHTGRAY);
         draw_bg(&bg_texture1, &bg_texture2);
+        
+        draw_texture_ex(
+            &orange, 
+            200.0, 0.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(100.0, 100.0)),
+                ..Default::default()
+            },
+        );
+        draw_texture_ex(
+            &cat, 
+            350.0, 0.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(100.0, 100.0)),
+                ..Default::default()
+            },
+        );
+        draw_texture_ex(
+            &proton, 
+            500.0, 0.0,
+            WHITE,
+            DrawTextureParams {
+                dest_size: Some(vec2(100.0, 100.0)),
+                ..Default::default()
+            },
+        );
 
         next_frame().await;
      }
